@@ -1,0 +1,3 @@
+1. install Pin
+2. git clone DRAMSim2 to $(PIN_DIRECTORY)/source/tools/
+3. download makefile and makefile.rules to cloned DRAMSim2 directory.

@@ -1,0 +1,1 @@
+../../../pin -t obj-intel64/memorySystem.so -- /bin/ls

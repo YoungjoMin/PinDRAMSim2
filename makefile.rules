@@ -1,0 +1,169 @@
+#
+# Copyright (C) 2012-2020 Intel Corporation.
+# SPDX-License-Identifier: MIT
+#
+
+##############################################################
+#
+# This file includes all the test targets as well as all the
+# non-default build rules and test recipes.
+#
+##############################################################
+
+
+##############################################################
+#
+# Test targets
+#
+##############################################################
+
+###### Place all generic definitions here ######
+
+# This defines tests which run tools of the same name.  This is simply for convenience to avoid
+# defining the test name twice (once in TOOL_ROOTS and again in TEST_ROOTS).
+# Tests defined here should not be defined in TOOL_ROOTS and TEST_ROOTS.
+TEST_TOOL_ROOTS := icache dcache memorySystem
+
+# This defines the tests to be run that were not already defined in TEST_TOOL_ROOTS.
+TEST_ROOTS :=
+
+# This defines the tools which will be run during the the tests, and were not already defined in
+# TEST_TOOL_ROOTS.
+TOOL_ROOTS :=
+
+# This defines the static analysis tools which will be run during the the tests. They should not
+# be defined in TEST_TOOL_ROOTS. If a test with the same name exists, it should be defined in
+# TEST_ROOTS.
+# Note: Static analysis tools are in fact executables linked with the Pin Static Analysis Library.
+# This library provides a subset of the Pin APIs which allows the tool to perform static analysis
+# of an application or dll. Pin itself is not used when this tool runs.
+SA_TOOL_ROOTS :=
+
+# This defines all the applications that will be run during the tests.
+APP_ROOTS :=
+
+# This defines any additional object files that need to be compiled.
+OBJECT_ROOTS := 
+
+# This defines any additional dlls (shared objects), other than the pintools, that need to be compiled.
+DLL_ROOTS :=
+
+# This defines any static libraries (archives), that need to be built.
+LIB_ROOTS :=
+
+###### Place OS-specific definitions here ######
+
+ifeq ($(TARGET_OS),linux)
+    TEST_TOOL_ROOTS += 
+    TEST_ROOTS += 
+    TOOL_ROOTS += 
+    APP_ROOTS += 
+    DLL_ROOTS += 
+endif
+
+ifeq ($(TARGET_OS),mac)
+    TEST_TOOL_ROOTS += 
+    APP_ROOTS += 
+    DLL_ROOTS += 
+endif
+
+###### Handle exceptions here (OS/arch related) ######
+
+ifeq ($(TARGET_OS),linux)
+    DWARF4_NOT_SUPPORTED := $(shell $(TOOLS_ROOT)/Utils/testToolVersion $(CXXPATH) lt 4.5)
+    ifeq ($(DWARF4_NOT_SUPPORTED),1)
+        TEST_ROOTS := $(filter-out debug_dwarf4_jit debug_dwarf4_probe, $(TEST_ROOTS))
+    endif
+    IS_DWARF5_GCC_DEFAULT := $(shell $(TOOLS_ROOT)/Utils/testToolVersion $(CXXPATH) ge 11.1)
+    ifeq ($(IS_DWARF5_GCC_DEFAULT),1)
+        TEST_ROOTS := $(filter-out debug_jit debug_probe, $(TEST_ROOTS))
+    endif
+endif
+
+RUNNABLE_TESTS := $(TEST_TOOL_ROOTS) $(TEST_ROOTS)
+
+###### Handle exceptions here (bugs related) ######
+
+###### Define the sanity subset ######
+
+# This defines the list of tests that should run in sanity. It should include all the tests listed in
+# TEST_TOOL_ROOTS and TEST_ROOTS excluding only unstable tests.
+SANITY_SUBSET := $(TEST_TOOL_ROOTS) $(TEST_ROOTS)
+
+# See mantis 4654
+ifeq ($(TARGET_OS),linux)
+    ifeq ($(DIST_NAME_FEDORA),1)
+        ifeq ($(DIST_VER_GE_28),1)
+            SANITY_SUBSET := $(filter-out app_backtrace, $(SANITY_SUBSET))
+        endif
+    endif
+endif
+
+##############################################################
+#
+# Build rules
+#
+##############################################################
+
+# This section contains the build rules for all binaries that have special build rules.
+# See makefile.default.rules for the default build rules.
+
+
+###### DRAMSIM build rules ######
+
+DRAMDIR := DRAMSim2/
+DRAM_SUBSET := AddressMapping Bank BankState BusPacket ClockDomain CommandQueue IniReader \
+                   MemoryController MemorySystem MultiChannelMemorySystem PrintMacros Rank SimulatorObject Transaction
+DRAM_OBJ := $(DRAM_SUBSET:%=$(OBJDIR)%.o)
+
+DRAM_EXE_NAME=DRAMsim
+DRAM_LIB_NAME=libdramsim.so
+
+LIB_MARCROS = -D__PIN__=1 -DPIN_CRT=1 -DTARGET_LINUX
+LIB_FLAGS = -funwind-tables -fno-stack-protector -fasynchronous-unwind-tables \
+                   -fomit-frame-pointer -fno-strict-aliasing -fno-exceptions -fno-rtti \
+                   -fpic -faligned-new
+LIB_INCLUDE = -isystem $(PIN_ROOT)/extras/stlport/include \
+                   -isystem $(PIN_ROOT)/extras/libstdc++/include \
+                   -isystem $(PIN_ROOT)/extras/crt/include \
+                   -isystem $(PIN_ROOT)/extras/crt/include/arch-$(BIONIC_ARCH) \
+                   -isystem $(PIN_ROOT)/extras/crt/include/kernel/uapi \
+                   -isystem $(PIN_ROOT)/extras/crt/include/uapi/asm-x86 \
+                   -I$(PIN_ROOT)/source/include/pin \
+                   -I$(PIN_ROOT)/source/include/pin/gen \
+                   -I$(PIN_ROOT)/extras/components/include \
+                   -I$(PIN_ROOT)/extras/xed-$(XED_ARCH)/include/xed
+
+$(DRAM_OBJ):
+	$(CXX) -DNO_STORAGE -DLOG_OUTPUT -fPIC $(TOOL_CXXFLAGS) $(COMP_OBJ) $@ $(@:$(OBJDIR)%.o=$(DRAMDIR)%.cpp)
+
+$(DRAM_LIB_NAME) : $(DRAM_OBJ)
+	g++ -g -shared -Wl,-soname,$@ -Wl,--hash-style=sysv $(LIB_MACROS) $(LIB_FLAGS) $(LIB_INCLUDE) -o $@ $^
+
+dramsim : $(DRAM_LIB_NAME)
+
+cleanlib :
+	rm $(DRAM_OBJ)
+
+###### Build rules ######
+
+SRC_SUBSET := memorySystem dcache icache
+SRC_OBJ := $(SRC_SUBSET:%=$(OBJDIR)%.o)
+MAKERPATH := -Wl,-rpath=../
+
+$(OBJDIR)memorySystem$(PINTOOL_SUFFIX): $(OBJDIR)memorySystem$(OBJ_SUFFIX) $(DRAM_OBJ)
+	$(LINKER) $(MAKERPATH) $(TOOL_LDFLAGS) $(LINK_EXE) $@ $^ $(TOOL_LPATHS) $(TOOL_LIBS)
+
+cleansource : 
+	rm $(SRC_OBJ)
+
+
+
+
+##### default build rule ####
+#$(OBJDIR)%$(OBJ_SUFFIX): %.cpp
+#	$(CXX) $(TOOL_CXXFLAGS) $(COMP_OBJ) $@ $< 
+
+#$(OBJDIR)%$(PINTOOL_SUFFIX): $(OBJDIR)%$(OBJ_SUFFIX)
+#	$(LINKER) $(TOOL_LDFLAGS) $(LINK_EXE) $@ $< $(TOOL_LPATHS) -L./ $(TOOL_LIBS) -ldramsim
+
