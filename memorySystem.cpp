@@ -26,8 +26,8 @@ using namespace DRAMSim;
 /* ===================================================================== */
 
 KNOB< string > KnobOutputFile(KNOB_MODE_WRITEONCE, "pintool", "o", "memorySystem.out", "specify dcache file name");
-KNOB< BOOL > KnobTrackLoads(KNOB_MODE_WRITEONCE, "pintool", "tl", "0", "track individual loads -- increases profiling time");
-KNOB< BOOL > KnobTrackStores(KNOB_MODE_WRITEONCE, "pintool", "ts", "0", "track individual stores -- increases profiling time");
+KNOB< BOOL > KnobTrackLoads(KNOB_MODE_WRITEONCE, "pintool", "tl", "1", "track individual loads -- increases profiling time");
+KNOB< BOOL > KnobTrackStores(KNOB_MODE_WRITEONCE, "pintool", "ts", "1", "track individual stores -- increases profiling time");
 KNOB< UINT32 > KnobThresholdHit(KNOB_MODE_WRITEONCE, "pintool", "rh", "100", "only report memops with hit count above threshold");
 KNOB< UINT32 > KnobThresholdMiss(KNOB_MODE_WRITEONCE, "pintool", "rm", "100",
                                  "only report memops with miss count above threshold");
@@ -55,7 +55,7 @@ INT32 Usage()
 
 TransactionCompleteCB *read_cb, *write_cb;
 MultiChannelMemorySystem *mem;
-
+static int memAccessCounter=0;
 void some_object::read_complete(unsigned id, uint64_t address, uint64_t clock_cycle)
 {
 	printf("[Callback] read complete: %d 0x%lx cycle=%lu\n", id, address, clock_cycle);
@@ -104,6 +104,7 @@ VOID LoadMulti(ADDRINT addr, UINT32 size, UINT32 instId)
 {
     // first level D-cache
     const BOOL dl1Hit = dl1->Access(addr, size, CACHE_BASE::ACCESS_TYPE_LOAD);
+    memAccessCounter++;
     if(!dl1Hit) {
       mem->addTransaction(false, addr);
       mem->update();
@@ -120,8 +121,9 @@ VOID StoreMulti(ADDRINT addr, UINT32 size, UINT32 instId)
 {
     // first level D-cache
     const BOOL dl1Hit = dl1->Access(addr, size, CACHE_BASE::ACCESS_TYPE_STORE);
-
+    memAccessCounter++;
     if(!dl1Hit) {
+      
       mem->addTransaction(true, addr);
       mem->update();
       mem->update();
@@ -140,6 +142,7 @@ VOID LoadSingle(ADDRINT addr, UINT32 instId)
     // @todo we may access several cache lines for
     // first level D-cache
     const BOOL dl1Hit = dl1->AccessSingleLine(addr, CACHE_BASE::ACCESS_TYPE_LOAD);
+    memAccessCounter++;
     if(!dl1Hit) {
       mem->addTransaction(false, addr);
       mem->update();
@@ -158,6 +161,7 @@ VOID StoreSingle(ADDRINT addr, UINT32 instId)
     // @todo we may access several cache lines for
     // first level D-cache
     const BOOL dl1Hit = dl1->AccessSingleLine(addr, CACHE_BASE::ACCESS_TYPE_STORE);
+    memAccessCounter++;
     if(!dl1Hit) {
       mem->addTransaction(true, addr);
       mem->update();
@@ -291,6 +295,7 @@ VOID Fini(int code, VOID* v)
                "#\n";
 
         out << profile.StringLong();
+        out << "\nmem accessed cnt = "<<memAccessCounter<<'\n';
     }
     out.close();
     mem->printStats(true);
