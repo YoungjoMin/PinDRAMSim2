@@ -1,0 +1,44 @@
+PIN:MEMLATENCIES 1.0. 0x0
+#
+# DCACHE stats
+#
+# L1 Data Cache:
+# Load-Hits:               153032   95.15%
+# Load-Misses:               7795    4.85%
+# Load-Accesses:           160827  100.00%
+# 
+# Store-Hits:               65769   96.35%
+# Store-Misses:              2495    3.65%
+# Store-Accesses:           68264  100.00%
+# 
+# Total-Hits:              218801   95.51%
+# Total-Misses:             10290    4.49%
+# Total-Accesses:          229091  100.00%
+
+#
+# LOAD stats
+#
+NumItems 17
+DATA:START
+#  counters
+# iaddr          : dcache:miss        dcache:hit
+0x000056023f8dba9c:          100          380
+0x00007f4406ba8530:          118          893
+0x00007f4406ba855e:          568         1756
+0x00007f4406ba8576:          170          502
+0x00007f4406ba8594:          275         2083
+0x00007f4406ba85ae:         1013         1345
+0x00007f441b82c3b7:          111          118
+0x00007f441b82c58f:          189          699
+0x00007f441b82c7bf:          179          108
+0x00007f441b82c82d:          221          350
+0x00007f441b82d0eb:          141          124
+0x00007f441b82edf0:          134          129
+0x00007f441b82f2f0:          383         1133
+0x00007f441b82f2f3:          380         1136
+0x00007f441b82f309:          378         1138
+0x00007f441b82f314:          554          962
+0x00007f441b84061a:          111          404
+DATA:END
+
+mem accessed cnt = 229091

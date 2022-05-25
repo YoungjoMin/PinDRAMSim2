@@ -1,0 +1,3 @@
+Pin + DRAMSim2
+1. install Pin
+2. git clone this repository to Pin/source/tools/

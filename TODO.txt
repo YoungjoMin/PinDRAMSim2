@@ -1,3 +1,8 @@
-1. install Pin
-2. git clone DRAMSim2 to $(PIN_DIRECTORY)/source/tools/
-3. download makefile and makefile.rules to cloned DRAMSim2 directory.
+CACHE
+1. check cache replacement scheme is LRU 
+2. try L1 + L2 + L3 cache then access to => Memory 
+
+Memory
+1. make Cuckoo Filter
+2. implement refresh scheme
+3. implement energy consumption calcuation part.
