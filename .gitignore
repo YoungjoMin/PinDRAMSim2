@@ -1,6 +1,8 @@
 results/
 *.o
 *.po
+*.so
+*.log
 *.dep
 *.deppo
 *.swp
