@@ -2,6 +2,7 @@ results/*
 *.o
 *.po
 *.so
+*.out
 *.log
 *.dep
 *.deppo
