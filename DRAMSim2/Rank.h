@@ -39,6 +39,7 @@
 #include "SystemConfiguration.h"
 #include "Bank.h"
 #include "BankState.h"
+#include "BloomFilter.h"
 
 using namespace std;
 using namespace DRAMSim;
@@ -46,6 +47,17 @@ using namespace DRAMSim;
 namespace DRAMSim
 {
 class MemoryController; //forward declaration
+class PeriodCounter {
+private:
+  int numRows;
+  int periodCounter;
+  BloomFilter<256*8, 10> range64_128;
+  BloomFilter<1024*8, 6> range128_256;
+public:
+  PeriodCounter(int numRows) : numRows(numRows) {}
+  void insertAll() {}
+  int refreshRowsCnt();
+};
 class Rank : public SimulatorObject
 {
 private:

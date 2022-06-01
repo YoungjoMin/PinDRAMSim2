@@ -260,7 +260,7 @@ void Rank::receiveFromBus(BusPacket *packet)
 				ERROR("== Error - Rank " << id << " received a REF when not allowed");
 				exit(0);
 			}
-			bankStates[i].nextActivate = currentClockCycle + tRFC;
+			bankStates[i].nextActivate = currentClockCycle + tRFC; //TODO
 		}
 		delete(packet); 
 		break;

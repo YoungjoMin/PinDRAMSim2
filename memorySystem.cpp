@@ -318,6 +318,7 @@ int main(int argc, char* argv[])
 	  write_cb = new Callback<some_object, void, unsigned, uint64_t, uint64_t>(&obj, &some_object::write_complete);
 	  /* pick a DRAM part to simulate */
 	  mem = getMemorySystemInstance("ini/DDR2_micron_16M_8b_x8_sg3E.ini", "ini/system.ini", "./", "memorySystem", 16384); 
+    //mem->setCPUClockSpeed(uint64_t cpuClkFreqHz);
     mem->RegisterCallbacks(read_cb, write_cb, power_callback);
 
 	  printf("dramsim_test main()\n");
