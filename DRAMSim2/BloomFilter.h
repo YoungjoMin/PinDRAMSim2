@@ -1,7 +1,7 @@
 #ifndef BLOOM_FILTER_H
 #define BLOOM_FILTER_H
 #include <bitset>
-#include <iostream>
+#include <unordered_set>
 
 /*
 The particular hash functions used to index the Bloom filter are an implementation choice. However,
@@ -38,18 +38,26 @@ class BloomFilter {
 private:
   std::bitset<m> mask;
   XorShift32<m-1> hashs;
+  std::unordered_set<int> us;
+  int falsePositiveCnt=0;
 public:
   BloomFilter() {}
   void insert(int x) {
     for(int i=0;i<k;i++) {
       mask.set(hashs(x,i));
     }
+    us.insert(x);
   }
   bool exist(int x) {
     for(int i=0;i<k;i++) {
       if(!mask.test(hashs(x,i))) return false;
     }
+    if(us.count(x)==0) falsePositiveCnt++;
     return true;
+  }
+
+  int getFalsePositiveCnt() {
+    return falsePositiveCnt;
   }
 };
 
