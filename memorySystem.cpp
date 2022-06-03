@@ -17,9 +17,19 @@
 #include "cache.H"
 #include "pin_profile.H"
 #include "memorySystem.hpp"
+
+#include <sys/syscall.h>      /* Definition of SYS_* constants */
+#include <unistd.h>
+
 using std::cerr;
 using std::endl;
 using namespace DRAMSim;
+
+int getCPUIdx() {
+  unsigned ret, cpu, node;
+  ret = syscall(309, &cpu, &node);
+  return ret==0 ? cpu : node;
+}
 
 /* ===================================================================== */
 /* Commandline Switches */
@@ -58,12 +68,14 @@ MultiChannelMemorySystem *mem;
 static int memAccessCounter=0;
 void some_object::read_complete(unsigned id, uint64_t address, uint64_t clock_cycle)
 {
-	printf("[Callback] read complete: %d 0x%lx cycle=%lu\n", id, address, clock_cycle);
+  printf("%d = getCPUIdx()\n", getCPUIdx());
+	//printf("[Callback] read complete: %d 0x%lx cycle=%lu\n", id, address, clock_cycle);
 }
 
 void some_object::write_complete(unsigned id, uint64_t address, uint64_t clock_cycle)
 {
-	printf("[Callback] write complete: %d 0x%lx cycle=%lu\n", id, address, clock_cycle);
+  printf("%d = getCPUIdx()\n", getCPUIdx());
+	//printf("[Callback] write complete: %d 0x%lx cycle=%lu\n", id, address, clock_cycle);
 }
 
 /* FIXME: this may be broken, currently */
@@ -107,9 +119,9 @@ VOID LoadMulti(ADDRINT addr, UINT32 size, UINT32 instId)
     memAccessCounter++;
     if(!dl1Hit) {
       mem->addTransaction(false, addr);
-      mem->update();
-      mem->update();
-      mem->update();
+      //mem->update();
+      //mem->update();
+      //mem->update();
     }
     const COUNTER counter = dl1Hit ? COUNTER_HIT : COUNTER_MISS;
     profile[instId][counter]++;
@@ -125,10 +137,10 @@ VOID StoreMulti(ADDRINT addr, UINT32 size, UINT32 instId)
     if(!dl1Hit) {
       
       mem->addTransaction(true, addr);
-      mem->update();
-      mem->update();
-      mem->update();
-      mem->update();
+      //mem->update();
+      //mem->update();
+      //mem->update();
+      //mem->update();
     }
 
     const COUNTER counter = dl1Hit ? COUNTER_HIT : COUNTER_MISS;
@@ -145,10 +157,10 @@ VOID LoadSingle(ADDRINT addr, UINT32 instId)
     memAccessCounter++;
     if(!dl1Hit) {
       mem->addTransaction(false, addr);
-      mem->update();
-      mem->update();
-      mem->update();
-      mem->update();
+      //mem->update();
+      //mem->update();
+      //mem->update();
+      //mem->update();
     }
 
     const COUNTER counter = dl1Hit ? COUNTER_HIT : COUNTER_MISS;
@@ -164,10 +176,10 @@ VOID StoreSingle(ADDRINT addr, UINT32 instId)
     memAccessCounter++;
     if(!dl1Hit) {
       mem->addTransaction(true, addr);
-      mem->update();
-      mem->update();
-      mem->update();
-      mem->update();
+      //mem->update();
+      //mem->update();
+      //mem->update();
+      //mem->update();
     }
     const COUNTER counter = dl1Hit ? COUNTER_HIT : COUNTER_MISS;
     profile[instId][counter]++;
@@ -301,6 +313,8 @@ VOID Fini(int code, VOID* v)
     mem->printStats(true);
 }
 
+
+
 /* ===================================================================== */
 
 int main(int argc, char* argv[])
@@ -312,17 +326,17 @@ int main(int argc, char* argv[])
         return Usage();
     }
     /////////////////////////////////////
-	  printf("dramsim_test main()\n");
 	  some_object obj;
 	  read_cb = new Callback<some_object, void, unsigned, uint64_t, uint64_t>(&obj, &some_object::read_complete);
 	  write_cb = new Callback<some_object, void, unsigned, uint64_t, uint64_t>(&obj, &some_object::write_complete);
 	  /* pick a DRAM part to simulate */
 	  mem = getMemorySystemInstance("ini/DDR2_micron_16M_8b_x8_sg3E.ini", "ini/system.ini", "./", "memorySystem", 16384); 
-    //mem->setCPUClockSpeed(uint64_t cpuClkFreqHz);
+    //mem->setCPUClockSpeed((uint64_t)2.5*1000*1000*1000); // 2.5 GHz
     mem->RegisterCallbacks(read_cb, write_cb, power_callback);
 
 	  printf("dramsim_test main()\n");
 	  printf("-----MEM1------\n");
+    printf("%d = getCPUIdx()\n", getCPUIdx());
     /////////////////////////////////////
 
     dl1 = new DL1::CACHE("L1 Data Cache", KnobCacheSize.Value() * KILO, KnobLineSize.Value(), KnobAssociativity.Value());
