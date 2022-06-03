@@ -299,7 +299,7 @@ void Rank::receiveFromBus(BusPacket *packet)
 		}
 
     refreshCounter++;
-    if(refreshCounter == 4*num_rows_per_bank) {
+    if(refreshCounter == num_rows_per_bank) {
       refreshCounter=0;
       periodCounter = (periodCounter+1)%4;
     }
