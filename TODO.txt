@@ -3,6 +3,8 @@ CACHE
 2. try L1 + L2 + L3 cache then access to => Memory 
 
 Memory
-1. make Cuckoo Filter
-2. implement refresh scheme
-3. implement energy consumption calcuation part.
+1. make Cuckoo Filter   -- done --
+2. implement refresh scheme 
+  2.0. implement overall structure -- done --
+  2.1. find correct energy consumption and refresh time (tRFC) formula
+  2.2. use exact probability for the row's refresh rate.
