@@ -1,7 +1,7 @@
 #ifndef BLOOM_FILTER_H
 #define BLOOM_FILTER_H
 #include <bitset>
-#include <unordered_set>
+#include <set>
 
 /*
 The particular hash functions used to index the Bloom filter are an implementation choice. However,
@@ -14,6 +14,7 @@ can be easily implemented in hardware
 
 // m must be power of 2
 
+namespace DRAMSim {
 
 template <int mask>
 class XorShift32  {
@@ -36,9 +37,9 @@ public:
 template <int m, int k>
 class BloomFilter {
 private:
+  std::set<int> us;
   std::bitset<m> mask;
   XorShift32<m-1> hashs;
-  std::unordered_set<int> us;
   int falsePositiveCnt=0;
 public:
   BloomFilter() {}
@@ -60,6 +61,6 @@ public:
     return falsePositiveCnt;
   }
 };
-
+};
 
 #endif
