@@ -56,23 +56,18 @@ namespace ClockDomain
 		//cout << "CTOR: callback address: " << (uint64_t)(this->callback) << "\t ratio="<<clock1<<"/"<<clock2<< endl;
 	}
 
-	void ClockDomainCrosser::update()
+	void ClockDomainCrosser::update() //cpu clock update
 	{
-		//short circuit case for 1:1 ratios
-		if (clock1 == clock2 && callback)
-		{
-			(*callback)();
-			return; 
-		}
+    //double CPI = 
 
-		// Update counter 1.
-		counter1 += clock1;
+		counter2++;
 
-		while (counter2 < counter1)
+		while (clock2 * counter1 < counter2 * clock1)  //  counter1 / clock1  < counter2 / clock2
 		{
-			counter2 += clock2;
-			//cout << "CALLBACK: counter1= " << counter1 << "; counter2= " << counter2 << "; " << endl;
-			//cout << "callback address: " << (uint64_t)callback << endl;
+			counter1++;
+			cout << "clock1= " << clock1 << "; clock2=  " << clock2 << "; " << endl;
+			cout << "CALLBACK: counter1= " << counter1 << "; counter2= " << counter2 << "; " << endl;
+			cout << "callback address: " << (uint64_t)callback << endl;
 			if (callback)
 			{
 				//cout << "Callback() " << (uint64_t)callback<< "Counters: 1="<<counter1<<", 2="<<counter2 <<endl;
@@ -80,7 +75,7 @@ namespace ClockDomain
 			}
 		}
 
-		if (counter1 == counter2)
+		if (clock2 * counter1 == counter2 * clock1)
 		{
 			counter1 = 0;
 			counter2 = 0;

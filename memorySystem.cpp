@@ -68,13 +68,13 @@ MultiChannelMemorySystem *mem;
 static int memAccessCounter=0;
 void some_object::read_complete(unsigned id, uint64_t address, uint64_t clock_cycle)
 {
-  printf("%d = getCPUIdx()\n", getCPUIdx());
+  //printf("%d = getCPUIdx()\n", getCPUIdx());
 	//printf("[Callback] read complete: %d 0x%lx cycle=%lu\n", id, address, clock_cycle);
 }
 
 void some_object::write_complete(unsigned id, uint64_t address, uint64_t clock_cycle)
 {
-  printf("%d = getCPUIdx()\n", getCPUIdx());
+  //printf("%d = getCPUIdx()\n", getCPUIdx());
 	//printf("[Callback] write complete: %d 0x%lx cycle=%lu\n", id, address, clock_cycle);
 }
 
@@ -119,9 +119,6 @@ VOID LoadMulti(ADDRINT addr, UINT32 size, UINT32 instId)
     memAccessCounter++;
     if(!dl1Hit) {
       mem->addTransaction(false, addr);
-      //mem->update();
-      //mem->update();
-      //mem->update();
     }
     const COUNTER counter = dl1Hit ? COUNTER_HIT : COUNTER_MISS;
     profile[instId][counter]++;
@@ -135,12 +132,7 @@ VOID StoreMulti(ADDRINT addr, UINT32 size, UINT32 instId)
     const BOOL dl1Hit = dl1->Access(addr, size, CACHE_BASE::ACCESS_TYPE_STORE);
     memAccessCounter++;
     if(!dl1Hit) {
-      
       mem->addTransaction(true, addr);
-      //mem->update();
-      //mem->update();
-      //mem->update();
-      //mem->update();
     }
 
     const COUNTER counter = dl1Hit ? COUNTER_HIT : COUNTER_MISS;
@@ -157,10 +149,6 @@ VOID LoadSingle(ADDRINT addr, UINT32 instId)
     memAccessCounter++;
     if(!dl1Hit) {
       mem->addTransaction(false, addr);
-      //mem->update();
-      //mem->update();
-      //mem->update();
-      //mem->update();
     }
 
     const COUNTER counter = dl1Hit ? COUNTER_HIT : COUNTER_MISS;
@@ -176,10 +164,6 @@ VOID StoreSingle(ADDRINT addr, UINT32 instId)
     memAccessCounter++;
     if(!dl1Hit) {
       mem->addTransaction(true, addr);
-      //mem->update();
-      //mem->update();
-      //mem->update();
-      //mem->update();
     }
     const COUNTER counter = dl1Hit ? COUNTER_HIT : COUNTER_MISS;
     profile[instId][counter]++;
@@ -280,6 +264,7 @@ VOID Instruction(INS ins, void* v)
                 }
             }
         }
+      mem->update();
     }
 }
 
@@ -331,7 +316,7 @@ int main(int argc, char* argv[])
 	  write_cb = new Callback<some_object, void, unsigned, uint64_t, uint64_t>(&obj, &some_object::write_complete);
 	  /* pick a DRAM part to simulate */
 	  mem = getMemorySystemInstance("ini/DDR2_micron_16M_8b_x8_sg3E.ini", "ini/system.ini", "./", "memorySystem", 16384); 
-    //mem->setCPUClockSpeed((uint64_t)2.5*1000*1000*1000); // 2.5 GHz
+    mem->setCPUClockSpeed((uint64_t)2.5*1000*1000*1000); // 2.5 GHz
     mem->RegisterCallbacks(read_cb, write_cb, power_callback);
 
 	  printf("dramsim_test main()\n");
