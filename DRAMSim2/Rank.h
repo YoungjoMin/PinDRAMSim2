@@ -47,17 +47,18 @@ using namespace DRAMSim;
 namespace DRAMSim
 {
 class MemoryController; //forward declaration
-class PeriodCounter {
+
+class RefreshPeriod {
 private:
   int numRows;
-  int periodCounter;
   BloomFilter<256*8, 10> range64_128;
   BloomFilter<1024*8, 6> range128_256;
 public:
-  PeriodCounter(int numRows) : numRows(numRows) {}
-  void insertAll() {}
-  int refreshRowsCnt();
+  RefreshPeriod(int numRows);
+  void insertAll();
+  int getRefreshPeriod(int rowIdx);
 };
+
 class Rank : public SimulatorObject
 {
 private:
@@ -67,6 +68,9 @@ private:
 	unsigned incomingWriteRow;
 	unsigned incomingWriteColumn;
 	bool isPowerDown;
+  RefreshPeriod refreshPeriod;
+  unsigned refreshCounter;
+  unsigned periodCounter;
 
 public:
 	//functions
@@ -75,6 +79,7 @@ public:
 	void receiveFromBus(BusPacket *packet);
 	void attachMemoryController(MemoryController *mc);
 	int getId() const;
+  int refresh(std::vector<BankState>& controllerBankState); //returns $ of rows refreshed
 	void setId(int id);
 	void update();
 	void powerUp();

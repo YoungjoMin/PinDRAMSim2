@@ -33,25 +33,54 @@
 
 #include "Rank.h"
 #include "MemoryController.h"
+#include <stdlib.h>
 
 using namespace std;
 using namespace DRAMSim;
+
+
+
+RefreshPeriod::RefreshPeriod(int numRows) : numRows(numRows) {
+  insertAll();
+}
+void RefreshPeriod::insertAll() {
+  //random_device rd;  cannot use random, unordered_set header...
+  //mt19937 gen(rd()); 
+  //uniform_int_distribution<int> dist(0,1'000'000); 
+  for(int i= 0;i<numRows;i++) {
+    int r = rand(); //TTODO use exact probability next time.
+    if( r< 100) range64_128.insert(i);
+    else if(r < 10'000) range128_256.insert(i);
+  }
+}
+
+
+int RefreshPeriod::getRefreshPeriod(int rowIdx) {
+  if(range64_128.exist(rowIdx)) return 1;
+  if(range128_256.exist(rowIdx)) return 2;
+  return 4;
+}
+
 
 Rank::Rank(ostream &dramsim_log_) :
 	id(-1),
 	dramsim_log(dramsim_log_),
 	isPowerDown(false),
+  refreshPeriod(NUM_ROWS/(NUM_RANKS*NUM_CHANS)),
+  refreshCounter(0),
+  periodCounter(0),
 	refreshWaiting(false),
 	readReturnCountdown(0),
 	banks(NUM_BANKS, Bank(dramsim_log_)),
 	bankStates(NUM_BANKS, BankState(dramsim_log_))
-
 {
 
 	memoryController = NULL;
 	outgoingDataPacket = NULL;
 	dataCyclesLeft = 0;
 	currentClockCycle = 0;
+
+
 
 #ifndef NO_STORAGE
 #endif
@@ -253,6 +282,9 @@ void Rank::receiveFromBus(BusPacket *packet)
 		break;
 	case REFRESH:
 		refreshWaiting = false;
+    {// use parentheses to define new variable in switch
+    unsigned num_rows_per_bank = NUM_ROWS/(NUM_BANKS*NUM_RANKS*NUM_CHANS);
+
 		for (size_t i=0;i<NUM_BANKS;i++)
 		{
 			if (bankStates[i].currentBankState != Idle)
@@ -260,8 +292,19 @@ void Rank::receiveFromBus(BusPacket *packet)
 				ERROR("== Error - Rank " << id << " received a REF when not allowed");
 				exit(0);
 			}
-			bankStates[i].nextActivate = currentClockCycle + tRFC; //TODO
+      int T = refreshPeriod.getRefreshPeriod(i*num_rows_per_bank + refreshCounter); //T =1,2,4
+      if(periodCounter%T != 0) continue; //do not refresh
+
+      bankStates[i].nextActivate = currentClockCycle + tRFC; //TTODO calc neccessary clock cycle time. Rank::RecieveFromBus
 		}
+
+    refreshCounter++;
+    if(refreshCounter == 4*num_rows_per_bank) {
+      refreshCounter=0;
+      periodCounter = (periodCounter+1)%4;
+    }
+    }
+
 		delete(packet); 
 		break;
 	case DATA:
@@ -339,6 +382,24 @@ void Rank::update()
 		}
 
 	}
+}
+
+//returns $ of rows refreshed
+int Rank::refresh(std::vector<BankState>& controllerBankState)  {
+  unsigned num_rows_per_bank = NUM_ROWS/(NUM_BANKS*NUM_RANKS*NUM_CHANS);
+  int refreshedCnt=0;
+	for (size_t i=0;i<NUM_BANKS;i++)
+	{
+    int T = refreshPeriod.getRefreshPeriod(i*num_rows_per_bank + refreshCounter); //T =1,2,4
+    if(periodCounter%T != 0) continue; //do not refresh
+
+    controllerBankState[i].nextActivate = currentClockCycle + tRFC; //TTODO calc neccessary clock cycle time. Rank::RecieveFromBus
+    controllerBankState[i].currentBankState = Refreshing; //TTODO calc neccessary clock cycle time. Rank::RecieveFromBus
+    controllerBankState[i].lastCommand = REFRESH; //TTODO calc neccessary clock cycle time. Rank::RecieveFromBus
+    controllerBankState[i].stateChangeCountdown = tRFC; //TTODO calc neccessary clock cycle time. Rank::RecieveFromBus
+    refreshedCnt++;
+	}
+  return refreshedCnt;
 }
 
 //power down the rank
