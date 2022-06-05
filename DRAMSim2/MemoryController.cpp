@@ -458,7 +458,7 @@ void MemoryController::update()
 
         { //parentheses to define new varibale in switch.
           int refresh_cnt = (*ranks)[rank]->refresh(bankStates[rank]);
-				  refreshEnergy[rank] += (IDD5 - IDD3N) * refresh_cnt * NUM_DEVICES; //TTODO  find exact formula to calculate the energy.
+				  refreshEnergy[rank] += (IDD5 - IDD3N) * tRFC * refresh_cnt; //TTODO  find exact formula to calculate the energy.
         }
 
         break;
