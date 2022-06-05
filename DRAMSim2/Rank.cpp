@@ -292,9 +292,10 @@ void Rank::receiveFromBus(BusPacket *packet)
 				ERROR("== Error - Rank " << id << " received a REF when not allowed");
 				exit(0);
 			}
+      #ifdef USE_RAIDR
       int T = refreshPeriod.getRefreshPeriod(i*num_rows_per_bank + refreshCounter); //T =1,2,4
       if(periodCounter%T != 0) continue; //do not refresh
-
+      #endif
       bankStates[i].nextActivate = currentClockCycle + tRFC; //TTODO calc neccessary clock cycle time. Rank::RecieveFromBus
 		}
 
@@ -386,12 +387,16 @@ void Rank::update()
 
 //returns $ of rows refreshed
 int Rank::refresh(std::vector<BankState>& controllerBankState)  {
+  #ifdef USE_RAIDR
   unsigned num_rows_per_bank = NUM_ROWS/(NUM_BANKS*NUM_RANKS*NUM_CHANS);
+  #endif
   int refreshedCnt=0;
 	for (size_t i=0;i<NUM_BANKS;i++)
 	{
+    #ifdef USE_RAIDR
     int T = refreshPeriod.getRefreshPeriod(i*num_rows_per_bank + refreshCounter); //T =1,2,4
     if(periodCounter%T != 0) continue; //do not refresh
+    #endif 
 
     controllerBankState[i].nextActivate = currentClockCycle + tRFC; //TTODO calc neccessary clock cycle time. Rank::RecieveFromBus
     controllerBankState[i].currentBankState = Refreshing; //TTODO calc neccessary clock cycle time. Rank::RecieveFromBus

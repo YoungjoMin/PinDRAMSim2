@@ -22,7 +22,7 @@
 # This defines tests which run tools of the same name.  This is simply for convenience to avoid
 # defining the test name twice (once in TOOL_ROOTS and again in TEST_ROOTS).
 # Tests defined here should not be defined in TOOL_ROOTS and TEST_ROOTS.
-TEST_TOOL_ROOTS := icache dcache memorySystem
+TEST_TOOL_ROOTS := icache dcache memorySystem memorySystem_RAIDR
 
 # This defines the tests to be run that were not already defined in TEST_TOOL_ROOTS.
 TEST_ROOTS :=
@@ -115,6 +115,7 @@ DRAMDIR := DRAMSim2/
 DRAM_SUBSET := AddressMapping Bank BankState BusPacket ClockDomain CommandQueue IniReader \
                    MemoryController MemorySystem MultiChannelMemorySystem PrintMacros Rank SimulatorObject Transaction
 DRAM_OBJ := $(DRAM_SUBSET:%=$(OBJDIR)%.o)
+DRAM_RAIDR_OBJ := $(DRAM_SUBSET:%=$(OBJDIR)%_RAIDR.o)
 
 DRAM_EXE_NAME=DRAMsim
 DRAM_LIB_NAME=libdramsim.so
@@ -137,6 +138,9 @@ LIB_INCLUDE = -isystem $(PIN_ROOT)/extras/stlport/include \
 $(DRAM_OBJ):
 	$(CXX) -DNO_STORAGE -DLOG_OUTPUT -fPIC $(TOOL_CXXFLAGS) $(COMP_OBJ) $@ $(@:$(OBJDIR)%.o=$(DRAMDIR)%.cpp)
 
+$(DRAM_RAIDR_OBJ):
+	$(CXX) -DNO_STORAGE -DLOG_OUTPUT -DUSE_RAIDR -fPIC $(TOOL_CXXFLAGS) $(COMP_OBJ) $@ $(@:$(OBJDIR)%_RAIDR.o=$(DRAMDIR)%.cpp)
+
 $(DRAM_LIB_NAME) : $(DRAM_OBJ)
 	g++ -g -shared -Wl,-soname,$@ -Wl,--hash-style=sysv $(LIB_MACROS) $(LIB_FLAGS) $(LIB_INCLUDE) -o $@ $^
 
@@ -152,6 +156,9 @@ SRC_OBJ := $(SRC_SUBSET:%=$(OBJDIR)%.o)
 MAKERPATH := -Wl,-rpath=../
 
 $(OBJDIR)memorySystem$(PINTOOL_SUFFIX): $(OBJDIR)memorySystem$(OBJ_SUFFIX) $(DRAM_OBJ)
+	$(LINKER) $(MAKERPATH) $(TOOL_LDFLAGS) $(LINK_EXE) $@ $^ $(TOOL_LPATHS) $(TOOL_LIBS)
+
+$(OBJDIR)memorySystem_RAIDR$(PINTOOL_SUFFIX): $(OBJDIR)memorySystem$(OBJ_SUFFIX) $(DRAM_RAIDR_OBJ)
 	$(LINKER) $(MAKERPATH) $(TOOL_LDFLAGS) $(LINK_EXE) $@ $^ $(TOOL_LPATHS) $(TOOL_LIBS)
 
 cleansource : 

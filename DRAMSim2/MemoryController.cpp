@@ -455,11 +455,22 @@ void MemoryController::update()
 				{
 					PRINT(" ++ Adding Refresh energy to total energy");
 				}
-
+      
+#ifdef RAIDR
         { //parentheses to define new varibale in switch.
           int refresh_cnt = (*ranks)[rank]->refresh(bankStates[rank]);
 				  refreshEnergy[rank] += (IDD5 - IDD3N) * tRFC * refresh_cnt; //TTODO  find exact formula to calculate the energy.
         }
+#else
+        for (size_t i=0;i<NUM_BANKS;i++)
+				{
+					bankStates[rank][i].nextActivate = currentClockCycle + tRFC;
+					bankStates[rank][i].currentBankState = Refreshing;
+					bankStates[rank][i].lastCommand = REFRESH;
+					bankStates[rank][i].stateChangeCountdown = tRFC;
+				}
+        refreshEnergy[rank] += (IDD5 - IDD3N) * tRFC * NUM_DEVICES;
+#endif
 
         break;
 			default:

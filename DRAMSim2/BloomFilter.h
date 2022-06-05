@@ -14,6 +14,8 @@ can be easily implemented in hardware
 
 // m must be power of 2
 
+//#define USE_RAIDR  // DEFINE USE_RAIDR (-DUSE_RAIDR) => use raidr, o.w. use distributed refresh 
+
 namespace DRAMSim {
 
 template <int mask>
