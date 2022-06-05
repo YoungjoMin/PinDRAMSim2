@@ -40,7 +40,7 @@ TOOL_ROOTS :=
 SA_TOOL_ROOTS :=
 
 # This defines all the applications that will be run during the tests.
-APP_ROOTS :=
+APP_ROOTS := MatMul
 
 # This defines any additional object files that need to be compiled.
 OBJECT_ROOTS := 
