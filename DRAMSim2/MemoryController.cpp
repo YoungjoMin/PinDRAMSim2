@@ -456,7 +456,7 @@ void MemoryController::update()
 					PRINT(" ++ Adding Refresh energy to total energy");
 				}
       
-#ifdef RAIDR
+#ifdef USE_RAIDR
         { //parentheses to define new varibale in switch.
           int refresh_cnt = (*ranks)[rank]->refresh(bankStates[rank]);
           int without_RAIDR_cnt = NUM_ROWS*NUM_BANKS;
