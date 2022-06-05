@@ -50,11 +50,11 @@ class MemoryController; //forward declaration
 
 class RefreshPeriod {
 private:
-  int numRows;
+  long numRowsPerRank, numCellsPerRow;
   BloomFilter<256*8, 10> range64_128;
   BloomFilter<1024*8, 6> range128_256;
 public:
-  RefreshPeriod(int numRows);
+  RefreshPeriod();
   void insertAll();
   int getRefreshPeriod(int rowIdx);
 };

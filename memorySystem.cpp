@@ -315,7 +315,7 @@ int main(int argc, char* argv[])
 	  read_cb = new Callback<some_object, void, unsigned, uint64_t, uint64_t>(&obj, &some_object::read_complete);
 	  write_cb = new Callback<some_object, void, unsigned, uint64_t, uint64_t>(&obj, &some_object::write_complete);
 	  /* pick a DRAM part to simulate */
-	  mem = getMemorySystemInstance("ini/DDR2_micron_16M_8b_x8_sg3E.ini", "ini/system.ini", "./", "memorySystem", 16384); 
+	  mem = getMemorySystemInstance("ini/DDR2_micron_16M_8b_x8_sg3E.ini", "ini/system.ini", "./", "memorySystem", 16384); //16384Mb => 2GB 
     mem->setCPUClockSpeed((uint64_t)2.5*1000*1000*1000); // 2.5 GHz
     mem->RegisterCallbacks(read_cb, write_cb, power_callback);
 

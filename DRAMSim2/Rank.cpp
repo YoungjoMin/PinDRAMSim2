@@ -39,21 +39,41 @@ using namespace std;
 using namespace DRAMSim;
 
 
+//RANDMAX = 7fffffff => 0x3fff'ffff + 0x3fff'ffff
+//10^16
+unsigned long rand_10_16() {
+  unsigned long X;
+  const unsigned long thres = 10'000'000'000'000'000;
+  while(1) {
+    X=0;
+    X |= ((unsigned long)rand() & 0x3fff'ffff)<<30;
+    X |= ((unsigned long)rand() & 0x3fff'ffff);
+    if(X < thres) break;
+  }
+  return X;
+}
 
-RefreshPeriod::RefreshPeriod(int numRows) : numRows(numRows) {
+
+RefreshPeriod::RefreshPeriod() {
+  numRowsPerRank = NUM_ROWS*NUM_BANKS;
+  numCellsPerRow = NUM_COLS * DEVICE_WIDTH;
   insertAll();
 }
 void RefreshPeriod::insertAll() {
-  //random_device rd;  cannot use random, unordered_set header...
-  //mt19937 gen(rd()); 
-  //uniform_int_distribution<int> dist(0,1'000'000); 
-  for(int i= 0;i<numRows;i++) {
-    int r = rand(); //TTODO use exact probability next time.
-    if( r< 100) range64_128.insert(i);
-    else if(r < 10'000) range128_256.insert(i);
+  // <= 128ms  => 10^(-10) => compare with 100
+  // <= 256,s  => 1/3*10^(-8) => compare with  3333
+
+  double p1 = 1e-10*1e+16, p2 = (1.0/3)*1e-8*1e+16;
+  unsigned long ip1 = (unsigned long)(p1*numCellsPerRow);
+  unsigned long ip2 = (unsigned long)(p2*numCellsPerRow);
+  printf("numRowsPerRank = %ld, numCOLS = %ld\n", numRowsPerRank, numCellsPerRow);
+  printf("total = %ld, ip1 = %ld, ip2 = %ld\n", 10'000'000'000'000'000, ip1, ip2);
+  for(int i= 0;i<numRowsPerRank;i++) {
+    unsigned long r = rand_10_16();
+    if( r< ip1) range64_128.insert(i);
+    else if(r < ip2) range128_256.insert(i);
   }
 }
-
 
 int RefreshPeriod::getRefreshPeriod(int rowIdx) {
   if(range64_128.exist(rowIdx)) return 1;
@@ -66,7 +86,7 @@ Rank::Rank(ostream &dramsim_log_) :
 	id(-1),
 	dramsim_log(dramsim_log_),
 	isPowerDown(false),
-  refreshPeriod(NUM_ROWS/(NUM_RANKS*NUM_CHANS)),
+  refreshPeriod(),
   refreshCounter(0),
   periodCounter(0),
 	refreshWaiting(false),
