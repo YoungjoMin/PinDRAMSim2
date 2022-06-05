@@ -53,6 +53,12 @@ unsigned long rand_10_16() {
   return X;
 }
 
+//[0, 2^h-1], h<29
+unsigned long rand(int h) {
+  int X = rand();
+  int mask = (1<<h)-1;
+  return X&mask;
+}
 
 RefreshPeriod::RefreshPeriod() {
   numRowsPerRank = NUM_ROWS*NUM_BANKS;
@@ -62,16 +68,18 @@ RefreshPeriod::RefreshPeriod() {
 void RefreshPeriod::insertAll() {
   // <= 128ms  => 10^(-10) => compare with 100
   // <= 256,s  => 1/3*10^(-8) => compare with  3333
+  //num Rows per rank => NUM_ROWS=16384 * NUM_BANKS=8; => 
 
-  double p1 = 1e-10*1e+16, p2 = (1.0/3)*1e-8*1e+16;
-  unsigned long ip1 = (unsigned long)(p1*numCellsPerRow);
-  unsigned long ip2 = (unsigned long)(p2*numCellsPerRow);
-  printf("numRowsPerRank = %ld, numCOLS = %ld\n", numRowsPerRank, numCellsPerRow);
-  printf("total = %ld, ip1 = %ld, ip2 = %ld\n", 10'000'000'000'000'000, ip1, ip2);
-  for(int i= 0;i<numRowsPerRank;i++) {
-    unsigned long r = rand_10_16();
-    if( r< ip1) range64_128.insert(i);
-    else if(r < ip2) range128_256.insert(i);
+  double p1 = 1e-10, p2 = (1.0/3)*1e-8;
+  int p1cnt = (int)(p1*numCellsPerRow*numRowsPerRank);
+  int long p2cnt = (int)(p2*numCellsPerRow*numRowsPerRank) - p1cnt;
+  int h = NUM_ROWS_LOG+NUM_BANKS_LOG;
+
+  for(int i=0;i<p1cnt;i++) {
+    range64_128.insert(rand(h));
+  }
+  for(int i=0;i<p2cnt;i++) {
+    range128_256.insert(rand(h));
   }
 }
 
