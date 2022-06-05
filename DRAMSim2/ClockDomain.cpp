@@ -65,9 +65,6 @@ namespace ClockDomain
 		while (clock2 * counter1 < counter2 * clock1)  //  counter1 / clock1  < counter2 / clock2
 		{
 			counter1++;
-			cout << "clock1= " << clock1 << "; clock2=  " << clock2 << "; " << endl;
-			cout << "CALLBACK: counter1= " << counter1 << "; counter2= " << counter2 << "; " << endl;
-			cout << "callback address: " << (uint64_t)callback << endl;
 			if (callback)
 			{
 				//cout << "Callback() " << (uint64_t)callback<< "Counters: 1="<<counter1<<", 2="<<counter2 <<endl;
