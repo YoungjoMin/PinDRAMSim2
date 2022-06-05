@@ -459,7 +459,10 @@ void MemoryController::update()
 #ifdef RAIDR
         { //parentheses to define new varibale in switch.
           int refresh_cnt = (*ranks)[rank]->refresh(bankStates[rank]);
-				  refreshEnergy[rank] += (IDD5 - IDD3N) * tRFC * refresh_cnt; //TTODO  find exact formula to calculate the energy.
+          int without_RAIDR_cnt = NUM_ROWS*NUM_BANKS;
+        
+          float ratio = (float)refresh_cnt / without_RAIDR_cnt;
+				  refreshEnergy[rank] += (IDD5 - IDD3N) * tRFC * NUM_DEVICES * ratio; //TTODO  find exact formula to calculate the energy.
         }
 #else
         for (size_t i=0;i<NUM_BANKS;i++)
