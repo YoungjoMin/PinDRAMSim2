@@ -311,7 +311,6 @@ void Rank::receiveFromBus(BusPacket *packet)
 	case REFRESH:
 		refreshWaiting = false;
     {// use parentheses to define new variable in switch
-    unsigned num_rows_per_bank = NUM_ROWS/(NUM_BANKS*NUM_RANKS*NUM_CHANS);
 
 		for (size_t i=0;i<NUM_BANKS;i++)
 		{
@@ -321,14 +320,14 @@ void Rank::receiveFromBus(BusPacket *packet)
 				exit(0);
 			}
       #ifdef USE_RAIDR
-      int T = refreshPeriod.getRefreshPeriod(i*num_rows_per_bank + refreshCounter); //T =1,2,4
+      int T = refreshPeriod.getRefreshPeriod(i*NUM_ROWS + refreshCounter); //T =1,2,4
       if(periodCounter%T != 0) continue; //do not refresh
       #endif
       bankStates[i].nextActivate = currentClockCycle + tRFC; //TTODO calc neccessary clock cycle time. Rank::RecieveFromBus
 		}
 
     refreshCounter++;
-    if(refreshCounter == num_rows_per_bank) {
+    if(refreshCounter == NUM_ROWS) {
       refreshCounter=0;
       periodCounter = (periodCounter+1)%4;
     }
@@ -415,14 +414,11 @@ void Rank::update()
 
 //returns $ of rows refreshed
 int Rank::refresh(std::vector<BankState>& controllerBankState)  {
-  #ifdef USE_RAIDR
-  unsigned num_rows_per_bank = NUM_ROWS/(NUM_BANKS*NUM_RANKS*NUM_CHANS);
-  #endif
   int refreshedCnt=0;
 	for (size_t i=0;i<NUM_BANKS;i++)
 	{
     #ifdef USE_RAIDR
-    int T = refreshPeriod.getRefreshPeriod(i*num_rows_per_bank + refreshCounter); //T =1,2,4
+    int T = refreshPeriod.getRefreshPeriod(i*NUM_ROWS + refreshCounter); //T =1,2,4
     if(periodCounter%T != 0) continue; //do not refresh
     #endif 
 
