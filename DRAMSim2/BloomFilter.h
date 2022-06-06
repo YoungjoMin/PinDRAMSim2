@@ -42,9 +42,10 @@ private:
   std::set<int> us;
   std::bitset<m> mask;
   XorShift32<m-1> hashs;
-  int falsePositiveCnt=0;
+  long falsePositiveCnt;
+  long accessCnt;
 public:
-  BloomFilter() {}
+  BloomFilter() {accessCnt = falsePositiveCnt=0;}
   void insert(int x) {
     for(int i=0;i<k;i++) {
       mask.set(hashs(x,i));
@@ -52,11 +53,15 @@ public:
     us.insert(x);
   }
   bool exist(int x) {
+    accessCnt++;
     for(int i=0;i<k;i++) {
       if(!mask.test(hashs(x,i))) return false;
     }
     if(us.count(x)==0) falsePositiveCnt++;
     return true;
+  }
+  double getFalsePositiveRate() {
+    return (double)falsePositiveCnt/accessCnt;
   }
 
   int getFalsePositiveCnt() {

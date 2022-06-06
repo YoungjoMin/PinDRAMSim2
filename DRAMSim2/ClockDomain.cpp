@@ -58,7 +58,6 @@ namespace ClockDomain
 
 	void ClockDomainCrosser::update() //cpu clock update
 	{
-    //double CPI = 
 
 		counter2++;
 

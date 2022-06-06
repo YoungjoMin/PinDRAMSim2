@@ -41,9 +41,9 @@ KNOB< BOOL > KnobTrackStores(KNOB_MODE_WRITEONCE, "pintool", "ts", "1", "track i
 KNOB< UINT32 > KnobThresholdHit(KNOB_MODE_WRITEONCE, "pintool", "rh", "100", "only report memops with hit count above threshold");
 KNOB< UINT32 > KnobThresholdMiss(KNOB_MODE_WRITEONCE, "pintool", "rm", "100",
                                  "only report memops with miss count above threshold");
-KNOB< UINT32 > KnobCacheSize(KNOB_MODE_WRITEONCE, "pintool", "c", "32", "cache size in kilobytes");
-KNOB< UINT32 > KnobLineSize(KNOB_MODE_WRITEONCE, "pintool", "b", "32", "cache block size in bytes");
-KNOB< UINT32 > KnobAssociativity(KNOB_MODE_WRITEONCE, "pintool", "a", "4", "cache associativity (1 for direct mapped)");
+KNOB< UINT32 > KnobCacheSize(KNOB_MODE_WRITEONCE, "pintool", "c", "512", "cache size in kilobytes");
+KNOB< UINT32 > KnobLineSize(KNOB_MODE_WRITEONCE, "pintool", "b", "64", "cache block size in bytes");
+KNOB< UINT32 > KnobAssociativity(KNOB_MODE_WRITEONCE, "pintool", "a", "16", "cache associativity (1 for direct mapped)");
 
 /* ===================================================================== */
 
@@ -89,7 +89,7 @@ void power_callback(double a, double b, double c, double d)
 namespace DL1
 {
 const UINT32 max_sets                          = KILO; // cacheSize / (lineSize * associativity);
-const UINT32 max_associativity                 = 256;  // associativity;
+const UINT32 max_associativity                 = 32;  // associativity;
 const CACHE_ALLOC::STORE_ALLOCATION allocation = CACHE_ALLOC::STORE_ALLOCATE;
 
 typedef CACHE_ROUND_ROBIN(max_sets, max_associativity, allocation) CACHE;
@@ -190,7 +190,7 @@ VOID StoreSingleFast(ADDRINT addr) { dl1->AccessSingleLine(addr, CACHE_BASE::ACC
 VOID Instruction(INS ins, void* v)
 {
     static UINT64 executedOpsCnt=0;
-    const UINT64 OPS_THRES = (UINT64)1000*1000*1000;
+    const UINT64 OPS_THRES = (UINT64)15'000'000;
     if(OPS_THRES<=executedOpsCnt) 
       PIN_ExitApplication(0);
     executedOpsCnt++;
@@ -320,8 +320,8 @@ int main(int argc, char* argv[])
 	  read_cb = new Callback<some_object, void, unsigned, uint64_t, uint64_t>(&obj, &some_object::read_complete);
 	  write_cb = new Callback<some_object, void, unsigned, uint64_t, uint64_t>(&obj, &some_object::write_complete);
 	  /* pick a DRAM part to simulate */
-	  mem = getMemorySystemInstance("ini/DDR2_micron_16M_8b_x8_sg3E.ini", "ini/system.ini", "./", "memorySystem", 4*1024*8); //4*1024*8Mb = 4GB Memory
-    mem->setCPUClockSpeed((uint64_t)2.5*1000*1000*1000); // 2.5 GHz
+	  mem = getMemorySystemInstance("ini/DDR2_micron_16M_8b_x8_sg3E.ini", "ini/system.ini", "./", "memorySystem", 1*1024*8); //1*1024*8Mb = 1GB Memory
+    mem->setCPUClockSpeed((uint64_t)1.5*1000*1000*1000); // 1.5 GHz
     mem->RegisterCallbacks(read_cb, write_cb, power_callback);
 
 	  printf("dramsim_test main()\n");

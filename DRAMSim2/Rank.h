@@ -57,6 +57,8 @@ public:
   RefreshPeriod();
   void insertAll();
   int getRefreshPeriod(int rowIdx);
+  double getFalsePositiveRate64_128();
+  double getFalsePositiveRate128_256();
 };
 
 class Rank : public SimulatorObject
@@ -68,7 +70,6 @@ private:
 	unsigned incomingWriteRow;
 	unsigned incomingWriteColumn;
 	bool isPowerDown;
-  RefreshPeriod refreshPeriod;
   unsigned refreshCounter;
   unsigned periodCounter;
 
@@ -90,12 +91,14 @@ public:
 	BusPacket *outgoingDataPacket;
 	unsigned dataCyclesLeft;
 	bool refreshWaiting;
+  long totalRefreshCnt;
 
 	//these are vectors so that each element is per-bank
 	vector<BusPacket *> readReturnPacket;
 	vector<unsigned> readReturnCountdown;
 	vector<Bank> banks;
 	vector<BankState> bankStates;
+  RefreshPeriod refreshPeriod;
 
 };
 }

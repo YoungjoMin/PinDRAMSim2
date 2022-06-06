@@ -6,5 +6,19 @@ Memory
 1. make Cuckoo Filter   -- done --
 2. implement refresh scheme 
   2.0. implement overall structure -- done --
-  2.1. find correct energy consumption and refresh time (tRFC) formula
-  2.2. use exact probability for the row's refresh rate.
+  2.1. find correct energy consumption and refresh time (tRFC) formula -- USE APPROXIMATION --
+  2.2. use exact probability for the row's refresh rate.  -- USE APPROXIMATION --
+
+
+====================trial1==============================
+cache 512KB, block size 64B, 16-way associative cache.
+1.5GHz CPU + 1GB RAM, 1CHANNEL, 
+
+1'000'000 ops => 132
+15'000'000 ops => 33min
+10^9 ops => 
+0.256*1.5*10
+
+1ms simulation
+7.8 micro sec 당 1번 refresh period.
+====================trial1==============================
