@@ -39,24 +39,10 @@ using namespace std;
 using namespace DRAMSim;
 
 
-//RANDMAX = 7fffffff => 0x3fff'ffff + 0x3fff'ffff
-//10^16
-unsigned long rand_10_16() {
-  unsigned long X;
-  const unsigned long thres = 10'000'000'000'000'000;
-  while(1) {
-    X=0;
-    X |= ((unsigned long)rand() & 0x3fff'ffff)<<30;
-    X |= ((unsigned long)rand() & 0x3fff'ffff);
-    if(X < thres) break;
-  }
-  return X;
-}
-
 //[0, 2^h-1], h<29
 unsigned long rand(int h) {
-  int X = rand();
-  int mask = (1<<h)-1;
+  unsigned long X = rand();
+  unsigned long mask = ((unsigned long)1<<h)-1;
   return X&mask;
 }
 

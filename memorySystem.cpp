@@ -190,15 +190,14 @@ VOID StoreSingleFast(ADDRINT addr) { dl1->AccessSingleLine(addr, CACHE_BASE::ACC
 VOID Instruction(INS ins, void* v)
 {
     static UINT64 executedOpsCnt=0;
-    const UINT64 OPS_THRES = (UINT64)15'000'000;//(UINT64)15'000'000;
+    const UINT64 OPS_THRES = (UINT64)150*1000*1000 ;//(UINT64)150'000'000;
     if(OPS_THRES<=executedOpsCnt) {
-      printf("already %ld ops are executed\n", OPS_THRES);
-      mem->printStats(true);
+      printf("already %ld ops are executed Exit!!\n", executedOpsCnt);
       PIN_ExitApplication(0);
       return;
     }
     executedOpsCnt++;
-    UINT32 memOperands = INS_MemoryOperandCount(ins);
+    UINT32 memOperands = INS_MemoryOperandCount(ins);    
 
     // Instrument each memory operand. If the operand is both read and written
     // it will be processed twice.
@@ -304,7 +303,7 @@ VOID Fini(int code, VOID* v)
         out << "\nmem accessed cnt = "<<memAccessCounter<<'\n';
     }
     out.close();
-    //mem->printStats(true);
+    mem->printStats(true);
 }
 
 
