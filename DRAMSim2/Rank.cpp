@@ -65,6 +65,14 @@ RefreshPeriod::RefreshPeriod() {
   numCellsPerRow = NUM_COLS * DEVICE_WIDTH;
   insertAll();
 }
+
+double RefreshPeriod::getFalsePositiveRate64_128() {
+  return range64_128.getFalsePositiveRate();
+}
+double RefreshPeriod::getFalsePositiveRate128_256() {
+  return range128_256.getFalsePositiveRate();
+}
+
 void RefreshPeriod::insertAll() {
   // <= 128ms  => 10^(-10) => compare with 100
   // <= 256,s  => 1/3*10^(-8) => compare with  3333
@@ -94,19 +102,20 @@ Rank::Rank(ostream &dramsim_log_) :
 	id(-1),
 	dramsim_log(dramsim_log_),
 	isPowerDown(false),
-  refreshPeriod(),
   refreshCounter(0),
   periodCounter(0),
 	refreshWaiting(false),
 	readReturnCountdown(0),
 	banks(NUM_BANKS, Bank(dramsim_log_)),
-	bankStates(NUM_BANKS, BankState(dramsim_log_))
+	bankStates(NUM_BANKS, BankState(dramsim_log_)),
+  refreshPeriod()
 {
 
 	memoryController = NULL;
 	outgoingDataPacket = NULL;
 	dataCyclesLeft = 0;
 	currentClockCycle = 0;
+  totalRefreshCnt = 0;
 
 
 
@@ -329,8 +338,9 @@ void Rank::receiveFromBus(BusPacket *packet)
     refreshCounter++;
     if(refreshCounter == NUM_ROWS) {
       refreshCounter=0;
-      periodCounter = (periodCounter+1)%4;
+      //periodCounter = (periodCounter+1)%4;
     }
+    periodCounter = rand()%4; //IMPORTANT, THIS TO NOT ACCURATELY GET RAIDR BUT APPROXIMATE RAIDR
     }
 
 		delete(packet); 
@@ -428,6 +438,7 @@ int Rank::refresh(std::vector<BankState>& controllerBankState)  {
     controllerBankState[i].stateChangeCountdown = tRFC; //TTODO calc neccessary clock cycle time. Rank::RecieveFromBus
     refreshedCnt++;
 	}
+  totalRefreshCnt+=refreshedCnt;
   return refreshedCnt;
 }
 

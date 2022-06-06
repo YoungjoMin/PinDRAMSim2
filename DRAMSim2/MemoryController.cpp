@@ -868,7 +868,7 @@ void MemoryController::printStats(bool finalStats)
 		PRINT( " ("<<totalWritesPerRank[r] * bytesPerTransaction<<" bytes)");
 		for (size_t j=0;j<NUM_BANKS;j++)
 		{
-			PRINT( "        -Bandwidth / Latency  (Bank " <<j<<"): " <<bandwidth[SEQUENTIAL(r,j)] << " GB/s\t\t" <<averageLatency[SEQUENTIAL(r,j)] << " ns");
+			//PRINT( "        -Bandwidth / Latency  (Bank " <<j<<"): " <<bandwidth[SEQUENTIAL(r,j)] << " GB/s\t\t" <<averageLatency[SEQUENTIAL(r,j)] << " ns");
 		}
 
 		// factor of 1000 at the end is to account for the fact that totalEnergy is accumulated in mJ since IDD values are given in mA
@@ -889,6 +889,12 @@ void MemoryController::printStats(bool finalStats)
 		PRINT( "     -Act/Pre    (watts)     : " << actprePower[r] );
 		PRINT( "     -Burst      (watts)     : " << burstPower[r]);
 		PRINT( "     -Refresh    (watts)     : " << refreshPower[r] );
+
+    
+    PRINT( " == RAIDR Data for Rank        " << r );
+    PRINT( "  -FALSEPositive64-128(%)    : " << (*ranks)[r]->refreshPeriod.getFalsePositiveRate64_128());
+    PRINT( "  -FALSEPositive128-256(%)   : " << (*ranks)[r]->refreshPeriod.getFalsePositiveRate128_256());
+    PRINT( "  -total refresh cnt         : " << (*ranks)[r]->totalRefreshCnt);
 
 		if (VIS_FILE_OUTPUT)
 		{
