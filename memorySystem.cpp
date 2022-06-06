@@ -191,8 +191,12 @@ VOID Instruction(INS ins, void* v)
 {
     static UINT64 executedOpsCnt=0;
     const UINT64 OPS_THRES = (UINT64)15'000'000;//(UINT64)15'000'000;
-    if(OPS_THRES<=executedOpsCnt) 
+    if(OPS_THRES<=executedOpsCnt) {
+      printf("already %ld ops are executed\n", OPS_THRES);
+      mem->printStats(true);
       PIN_ExitApplication(0);
+      return;
+    }
     executedOpsCnt++;
     UINT32 memOperands = INS_MemoryOperandCount(ins);
 
@@ -300,7 +304,7 @@ VOID Fini(int code, VOID* v)
         out << "\nmem accessed cnt = "<<memAccessCounter<<'\n';
     }
     out.close();
-    mem->printStats(true);
+    //mem->printStats(true);
 }
 
 
