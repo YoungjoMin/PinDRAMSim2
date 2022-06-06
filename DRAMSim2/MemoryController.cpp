@@ -99,7 +99,7 @@ MemoryController::MemoryController(MemorySystem *parent, CSVWriter &csvOut_, ost
 	backgroundEnergy = vector <uint64_t >(NUM_RANKS,0);
 	burstEnergy = vector <uint64_t> (NUM_RANKS,0);
 	actpreEnergy = vector <uint64_t> (NUM_RANKS,0);
-	refreshEnergy = vector <uint64_t> (NUM_RANKS,0);
+	refreshEnergy = vector <double> (NUM_RANKS,0);
 
 	totalEpochLatency = vector<uint64_t> (NUM_RANKS*NUM_BANKS,0);
 
@@ -459,9 +459,9 @@ void MemoryController::update()
 #ifdef USE_RAIDR
         { //parentheses to define new varibale in switch.
           int refresh_cnt = (*ranks)[rank]->refresh(bankStates[rank]);
-          int without_RAIDR_cnt = NUM_ROWS*NUM_BANKS;
+          int without_RAIDR_cnt = NUM_BANKS;
         
-          float ratio = (float)refresh_cnt / without_RAIDR_cnt;
+          double ratio = (double)refresh_cnt / without_RAIDR_cnt;
 				  refreshEnergy[rank] += (IDD5 - IDD3N) * tRFC * NUM_DEVICES * ratio; //TTODO  find exact formula to calculate the energy.
         }
 #else
@@ -472,7 +472,7 @@ void MemoryController::update()
 					bankStates[rank][i].lastCommand = REFRESH;
 					bankStates[rank][i].stateChangeCountdown = tRFC;
 				}
-        refreshEnergy[rank] += (IDD5 - IDD3N) * tRFC * NUM_DEVICES;
+        refreshEnergy[rank] += (IDD5 - IDD3N) * tRFC * NUM_DEVICES * 1.0;
 #endif
 
         break;
@@ -804,7 +804,7 @@ void MemoryController::resetStats()
 
 		burstEnergy[i] = 0;
 		actpreEnergy[i] = 0;
-		refreshEnergy[i] = 0;
+		refreshEnergy[i] = 0.0;
 		backgroundEnergy[i] = 0;
 		totalReadsPerRank[i] = 0;
 		totalWritesPerRank[i] = 0;
@@ -846,11 +846,10 @@ void MemoryController::printStats(bool finalStats)
 		}
 	}
 #ifdef LOG_OUTPUT
-	dramsim_log.precision(3);
-	dramsim_log.setf(ios::fixed,ios::floatfield);
+	dramsim_log.precision(6);
+	//dramsim_log.setf(ios::fixed,ios::floatfield);
 #else
-	cout.precision(3);
-	cout.setf(ios::fixed,ios::floatfield);
+	cout.precision(6);
 #endif
 
 	PRINT( " =======================================================" );

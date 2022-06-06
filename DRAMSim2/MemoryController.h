@@ -128,7 +128,7 @@ public:
 	vector< uint64_t > backgroundEnergy;
 	vector< uint64_t > burstEnergy;
 	vector< uint64_t > actpreEnergy;
-	vector< uint64_t > refreshEnergy;
+	vector< double > refreshEnergy;
 
 };
 }
