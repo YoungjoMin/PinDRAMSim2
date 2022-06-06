@@ -40,6 +40,8 @@ int main() {
   initMat(&C,N);
   printf("mat Init complete\n");
   matMul(C,A,B, N);
+  matMul(B,C,A, N);
+  matMul(A,B,C, N);
   printf("mat Mul complete\n");
   freeMat(A,N);
   freeMat(B,N);

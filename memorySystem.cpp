@@ -189,6 +189,11 @@ VOID StoreSingleFast(ADDRINT addr) { dl1->AccessSingleLine(addr, CACHE_BASE::ACC
 
 VOID Instruction(INS ins, void* v)
 {
+    static UINT64 executedOpsCnt=0;
+    const UINT64 OPS_THRES = (UINT64)1000*1000*1000;
+    if(OPS_THRES<=executedOpsCnt) 
+      PIN_ExitApplication(0);
+    executedOpsCnt++;
     UINT32 memOperands = INS_MemoryOperandCount(ins);
 
     // Instrument each memory operand. If the operand is both read and written
@@ -315,13 +320,12 @@ int main(int argc, char* argv[])
 	  read_cb = new Callback<some_object, void, unsigned, uint64_t, uint64_t>(&obj, &some_object::read_complete);
 	  write_cb = new Callback<some_object, void, unsigned, uint64_t, uint64_t>(&obj, &some_object::write_complete);
 	  /* pick a DRAM part to simulate */
-	  mem = getMemorySystemInstance("ini/DDR2_micron_16M_8b_x8_sg3E.ini", "ini/system.ini", "./", "memorySystem", 16384); //16384Mb => 2GB 
+	  mem = getMemorySystemInstance("ini/DDR2_micron_16M_8b_x8_sg3E.ini", "ini/system.ini", "./", "memorySystem", 4*1024*8); //4*1024*8Mb = 4GB Memory
     mem->setCPUClockSpeed((uint64_t)2.5*1000*1000*1000); // 2.5 GHz
     mem->RegisterCallbacks(read_cb, write_cb, power_callback);
 
 	  printf("dramsim_test main()\n");
 	  printf("-----MEM1------\n");
-    printf("%d = getCPUIdx()\n", getCPUIdx());
     /////////////////////////////////////
 
     dl1 = new DL1::CACHE("L1 Data Cache", KnobCacheSize.Value() * KILO, KnobLineSize.Value(), KnobAssociativity.Value());
@@ -338,7 +342,10 @@ int main(int argc, char* argv[])
 
     INS_AddInstrumentFunction(Instruction, 0);
     PIN_AddFiniFunction(Fini, 0);
-
+#ifdef USE_RAIDR
+    printf("Use Raidr\n");
+#endif
+    printf("Initialization finished, start the test\n");
     // Never returns
 
     PIN_StartProgram();
