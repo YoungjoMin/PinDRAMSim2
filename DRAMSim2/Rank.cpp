@@ -66,7 +66,7 @@ void RefreshPeriod::insertAll() {
 
   double p1 = 1e-10, p2 = (1.0/3)*1e-8;
   int p1cnt = (int)(p1*numCellsPerRow*numRowsPerRank);
-  int long p2cnt = (int)(p2*numCellsPerRow*numRowsPerRank) - p1cnt;
+  long p2cnt = (long)(p2*numCellsPerRow*numRowsPerRank) - p1cnt;
   int h = NUM_ROWS_LOG+NUM_BANKS_LOG;
 
   for(int i=0;i<p1cnt;i++) {
@@ -306,7 +306,7 @@ void Rank::receiveFromBus(BusPacket *packet)
 	case REFRESH:
 		refreshWaiting = false;
     {// use parentheses to define new variable in switch
-
+    int refreshCnt = 0;
 		for (size_t i=0;i<NUM_BANKS;i++)
 		{
 			if (bankStates[i].currentBankState != Idle)
@@ -318,15 +318,17 @@ void Rank::receiveFromBus(BusPacket *packet)
       int T = refreshPeriod.getRefreshPeriod(i*NUM_ROWS + refreshCounter); //T =1,2,4
       if(periodCounter%T != 0) continue; //do not refresh
       #endif
+      refreshCnt++;
+      totalRefreshCnt++;
       bankStates[i].nextActivate = currentClockCycle + tRFC; //TTODO calc neccessary clock cycle time. Rank::RecieveFromBus
 		}
 
     refreshCounter++;
     if(refreshCounter == NUM_ROWS) {
       refreshCounter=0;
-      //periodCounter = (periodCounter+1)%4;
+      periodCounter = (periodCounter+1)%4;
     }
-    periodCounter = rand()%4; //IMPORTANT, THIS TO NOT ACCURATELY GET RAIDR BUT APPROXIMATE RAIDR
+    //periodCounter = rand()%4; //IMPORTANT, THIS TO NOT ACCURATELY GET RAIDR BUT APPROXIMATE RAIDR
     }
 
 		delete(packet); 
@@ -423,8 +425,8 @@ int Rank::refresh(std::vector<BankState>& controllerBankState)  {
     controllerBankState[i].lastCommand = REFRESH; //TTODO calc neccessary clock cycle time. Rank::RecieveFromBus
     controllerBankState[i].stateChangeCountdown = tRFC; //TTODO calc neccessary clock cycle time. Rank::RecieveFromBus
     refreshedCnt++;
+    totalRefreshCnt++;
 	}
-  totalRefreshCnt+=refreshedCnt;
   return refreshedCnt;
 }
 

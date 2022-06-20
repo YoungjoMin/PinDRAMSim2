@@ -18,6 +18,7 @@
 #include "pin_profile.H"
 #include "memorySystem.hpp"
 
+#include "DRAMSim2/SystemConfiguration.h"
 #include <sys/syscall.h>      /* Definition of SYS_* constants */
 #include <unistd.h>
 
@@ -189,7 +190,7 @@ VOID StoreSingleFast(ADDRINT addr) { dl1->AccessSingleLine(addr, CACHE_BASE::ACC
 
 VOID InstructionCOUNTING() {
     static UINT64 executedOpsCnt=0;
-    const UINT64 OPS_THRES = (UINT64)3000*1000*1000 ;//1.5 second
+    const UINT64 OPS_THRES = (UINT64)3*1000*1000*1000 ;//1.5 second
     if(OPS_THRES<=executedOpsCnt) {
       printf("already %ld ops are executed Exit!!\n", executedOpsCnt);
       PIN_ExitApplication(0);
@@ -355,6 +356,7 @@ int main(int argc, char* argv[])
     printf("Use Raidr\n");
 #endif
     printf("Initialization finished, start the test\n");
+    printf("NUM_CHANS: %d, NUM_RANKS: %d, NUM_BANKS: %d, NUM_ROWS: %d\n", NUM_CHANS, NUM_RANKS, NUM_BANKS, NUM_ROWS);
     // Never returns
 
     PIN_StartProgram();
