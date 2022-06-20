@@ -189,13 +189,13 @@ VOID StoreSingleFast(ADDRINT addr) { dl1->AccessSingleLine(addr, CACHE_BASE::ACC
 
 VOID InstructionCOUNTING() {
     static UINT64 executedOpsCnt=0;
-    const UINT64 OPS_THRES = (UINT64)60*1500*1000*1000 ;//(UINT64)15'000'000; // 1 minute
+    const UINT64 OPS_THRES = (UINT64)3000*1000*1000 ;//1.5 second
     if(OPS_THRES<=executedOpsCnt) {
       printf("already %ld ops are executed Exit!!\n", executedOpsCnt);
       PIN_ExitApplication(0);
       return;
     }
-    if(executedOpsCnt%100'000 == 0)
+    if(executedOpsCnt%1'000'000 == 0)
       printf("%ld ops are executed\n", executedOpsCnt);
     executedOpsCnt++;
     mem->update();
