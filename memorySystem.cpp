@@ -195,7 +195,7 @@ VOID InstructionCOUNTING() {
       PIN_ExitApplication(0);
       return;
     }
-    if(executedOpsCnt%10'000 == 0)
+    if(executedOpsCnt%100'000 == 0)
       printf("%ld ops are executed\n", executedOpsCnt);
     executedOpsCnt++;
 }
@@ -329,8 +329,8 @@ int main(int argc, char* argv[])
 	  read_cb = new Callback<some_object, void, unsigned, uint64_t, uint64_t>(&obj, &some_object::read_complete);
 	  write_cb = new Callback<some_object, void, unsigned, uint64_t, uint64_t>(&obj, &some_object::write_complete);
 	  /* pick a DRAM part to simulate */
-	  mem = getMemorySystemInstance("ini/DDR2_micron_16M_8b_x8_sg3E.ini", "ini/system.ini", "./", "memorySystem", 1*1024*8); //1*1024*8Mb = 1GB Memory
-    mem->setCPUClockSpeed((uint64_t)1.5*1000*1000*1000); // 1.5 GHz
+	  mem = getMemorySystemInstance("ini/DDR2_micron_16M_8b_x8_sg3E.ini", "ini/system.ini", "./", "memorySystem", 4*1024*8); //1*1024*8Mb = 4GB Memory
+    mem->setCPUClockSpeed((uint64_t)2.0*1000*1000*1000); // 2.0 GHz
     mem->RegisterCallbacks(read_cb, write_cb, power_callback);
 
 	  printf("dramsim_test main()\n");

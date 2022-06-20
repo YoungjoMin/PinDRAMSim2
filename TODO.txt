@@ -22,3 +22,15 @@ cache 512KB, block size 64B, 16-way associative cache.
 1ms simulation
 7.8 micro sec 당 1번 refresh period.
 ====================trial1==============================
+
+====================trial2==============================
+cache 512KB, block size 64B, 16-way associative cache.
+2.0GHz CPU + 4GB RAM, 2CHANNEL, 
+
+1'000'000 ops =>  ~3s
+1'500'000'000 ops => ~75 min
+
+CPU 1 second simulation.
+
+7.8 micro sec 당 1번 refresh period.
+====================trial2==============================
